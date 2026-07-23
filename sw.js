@@ -1,4 +1,4 @@
-const CACHE_NAME = 'convertix-v6';
+const CACHE_NAME = 'convertix-v5';
 const urlsToCache = [
   'index.html',
   'manifest.json',

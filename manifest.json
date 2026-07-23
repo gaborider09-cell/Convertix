@@ -1,9 +1,7 @@
 {
   "name": "Convertix",
   "short_name": "Convertix",
-  "start_url": "./index.html",
-  "scope": "./",
-  "id": "./",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
