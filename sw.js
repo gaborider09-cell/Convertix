@@ -1,9 +1,8 @@
-const CACHE_NAME = 'convertix-v2';
+const CACHE_NAME = 'convertix-v5';
 const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  './IMG_8051.jpg'
+  'index.html',
+  'manifest.json',
+  'icon.svg'
 ];
 
 self.addEventListener('install', event => {
