@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Convertix</title>
+  
+  <!-- Configuración PWA para instalación -->
+  <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/jpeg" href="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=">
+  <link rel="apple-touch-icon" href="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=">
+
+  <style>
+    /* Diseño y Paleta de Colores (Modo Oscuro Moderno) */
+    :root {
+      --bg: #000000;
+      --surface: #1c1c1e;
+      --primary: #34c759;
+      --text: #ffffff;
+      --text-sec: #ebebf599;
+      --key-bg-top: #3a3a3c;
+      --key-bg-bottom: #2c2c2e;
+      --key-shadow: #151515;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; touch-action: manipulation; }
+    
+    body, html { height: 100%; width: 100%; background: var(--bg); color: var(--text); overflow: hidden; }
+    #app { display: flex; flex-direction: column; height: 100dvh; padding: 15px; max-width: 400px; margin: 0 auto; position: relative; }
+    
+    /* Encabezado con Logo alineado a la izquierda */
+    .app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; padding-left: 5px; }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .app-logo { width: 36px; height: 36px; border-radius: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.5); object-fit: cover; }
+    .app-title { font-size: 19px; font-weight: 700; letter-spacing: 0.5px; }
+    
+    /* Botón de instalación PWA */
+    #btn-install { background: #0a84ff; border: none; color: white; padding: 6px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; display: none; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+
+    /* Pantallas de Valores */
+    .displays { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 10px; margin-top: 5px; }
+    .display-box { 
+      background: var(--surface); 
+      padding: 16px 18px; 
+      border-radius: 20px; 
+      border: 2px solid transparent; 
+      transition: all 0.25s ease; 
+      cursor: pointer; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .display-box.active { 
+      border-color: var(--primary); 
+      background: #1a251b; 
+    }
+    .display-header { 
+      display: flex; 
+      justify-content: space-between; 
+      color: var(--text-sec); 
+      font-size: 14px; 
+      margin-bottom: 4px; 
+      font-weight: 600; 
+    }
+    .display-value { 
+      font-size: 38px; 
+      font-weight: 700; 
+      text-align: right; 
+      overflow-x: auto; 
+      white-space: nowrap; 
+      letter-spacing: -1px;
+    }
+    .display-value::-webkit-scrollbar { display: none; }
+    
+    /* Selector de Tasa y Botón de Ajustes */
+    .controls { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+    select { 
+      flex: 1; 
+      background: var(--surface); 
+      color: var(--text); 
+      border: none; 
+      padding: 12px 16px; 
+      border-radius: 16px; 
+      font-size: 15px; 
+      outline: none; 
+      appearance: none; 
+      font-weight: 600;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    .btn-settings { 
+      background: var(--surface); 
+      border: none; 
+      color: var(--text); 
+      padding: 12px 16px; 
+      border-radius: 16px; 
+      font-size: 18px; 
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: transform 0.1s;
+    }
+    .btn-settings:active { transform: scale(0.95); }
+    
+    /* Teclado Numérico Integrado */
+    .keypad { 
+      display: grid; 
+      grid-template-columns: repeat(4, 1fr); 
+      gap: 10px; 
+      padding-bottom: calc(env(safe-area-inset-bottom) + 5px); 
+    }
+    .key { 
+      background: linear-gradient(180deg, var(--key-bg-top) 0%, var(--key-bg-bottom) 100%);
+      border: 1px solid #48484a;
+      border-radius: 16px; 
+      font-size: 26px; 
+      color: var(--text); 
+      padding: 14px 0; 
+      font-weight: 500; 
+      cursor: pointer; 
+      user-select: none; 
+      box-shadow: 0 5px 0 var(--key-shadow), 0 8px 10px rgba(0,0,0,0.4);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .key:active { 
+      transform: translateY(5px); 
+      box-shadow: 0 0px 0 var(--key-shadow), 0 2px 4px rgba(0,0,0,0.4);
+      background: var(--key-bg-top);
+    }
+    
+    .key.action { 
+      background: linear-gradient(180deg, #ff9f0a 0%, #d08200 100%); 
+      border-color: #ffa726; 
+      color: white; 
+      font-size: 22px;
+      box-shadow: 0 5px 0 #995c00, 0 8px 10px rgba(0,0,0,0.4);
+    }
+    .key.action:active { box-shadow: 0 0px 0 #995c00; transform: translateY(5px); }
+    
+    .key.clear { 
+      background: linear-gradient(180deg, #ff453a 0%, #c42b22 100%); 
+      border-color: #ff6b6b; 
+      color: white; 
+      font-size: 20px;
+      box-shadow: 0 5px 0 #8e1a14, 0 8px 10px rgba(0,0,0,0.4);
+    }
+    .key.clear:active { box-shadow: 0 0px 0 #8e1a14; transform: translateY(5px); }
+    
+    .key.zero { grid-column: span 2; }
+    
+    /* Modal de Configuración */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    .modal.show { display: flex; }
+    .modal-content { background: var(--surface); padding: 25px 20px; border-radius: 24px; width: 90%; max-width: 360px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+    .modal-title { margin-bottom: 20px; font-size: 20px; font-weight: 700; text-align: center; }
+    
+    .input-group { margin-bottom: 12px; }
+    .input-group label { display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 13px; font-weight: 500; }
+    .input-group input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #333; background: #000; color: var(--text); font-size: 16px; font-weight: 600; outline: none; transition: border 0.2s; }
+    .input-group input:focus { border-color: var(--primary); }
+    
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .btn { flex: 1; padding: 14px; border-radius: 14px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: transform 0.1s; }
+    .btn:active { transform: scale(0.96); }
+    .btn-update { background: #0a84ff; color: white; }
+    .btn-save { background: var(--primary); color: white; }
+    .btn-close { background: #3a3a3c; color: white; margin-top: 10px; width: 100%; }
+    .status { text-align: center; font-size: 13px; font-weight: 600; margin-top: 12px; height: 18px; }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Encabezado con Logo y Botón de Instalación PWA -->
+  <div class="app-header">
+    <div class="header-left">
+      <svg class="app-logo" viewBox="0 0 512 512">
+        <rect width="512" height="512" rx="112" fill="#1c1c1e"/>
+        <path d="M120 70h272a50 50 0 0 1 50 50v100H70V120a50 50 0 0 1 50-50z" fill="#2c2c2e"/>
+        <text x="410" y="170" font-family="-apple-system, sans-serif" font-size="110" font-weight="bold" fill="#ffffff" text-anchor="end">0</text>
+        <rect x="70" y="250" width="160" height="100" rx="35" fill="#3a3a3c"/>
+        <path d="M130 300h40M150 280v40" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+        <rect x="280" y="250" width="160" height="100" rx="35" fill="#3a3a3c"/>
+        <path d="M340 300h40" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+        <rect x="70" y="380" width="160" height="100" rx="35" fill="#3a3a3c"/>
+        <path d="M125 415l50 50M175 415l-50 50" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+        <rect x="280" y="380" width="160" height="100" rx="35" fill="#ff9f0a"/>
+        <path d="M335 415h50M335 445h50" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+      </svg>
+      <div class="app-title">Convertix</div>
+    </div>
+    <button id="btn-install">📥 Instalar</button>
+  </div>
+
+  <!-- Pantallas con Banderas -->
+  <div class="displays">
+    <div class="display-box active" id="box-usd" onclick="setActive('usd')">
+      <div class="display-header"><span>🇺🇸 Dólares (USD)</span> <span>💵</span></div>
+      <div class="display-value" id="val-usd">0</div>
+    </div>
+    <div class="display-box" id="box-ves" onclick="setActive('ves')">
+      <div class="display-header"><span>🇻🇪 Bolívares (VES)</span> <span>💶</span></div>
+      <div class="display-value" id="val-ves">0</div>
+    </div>
+  </div>
+
+  <!-- Controles -->
+  <div class="controls">
+    <select id="rate-selector" onchange="calculate()">
+      <option value="bcv">🇻🇪 BCV Oficial</option>
+      <option value="paralelo">🇻🇪 Dólar Paralelo</option>
+      <option value="eur">🇪🇺 Euro (BCV)</option>
+      <option value="manual">✍️ Tasa Manual</option>
+    </select>
+    <button class="btn-settings" onclick="openModal()">⚙️</button>
+  </div>
+
+  <!-- Teclado Numérico Alto Relieve -->
+  <div class="keypad">
+    <button class="key" onclick="input('7')">7</button>
+    <button class="key" onclick="input('8')">8</button>
+    <button class="key" onclick="input('9')">9</button>
+    <button class="key action" onclick="backspace()">⌫</button>
+    
+    <button class="key" onclick="input('4')">4</button>
+    <button class="key" onclick="input('5')">5</button>
+    <button class="key" onclick="input('6')">6</button>
+    <button class="key clear" onclick="clearAll()">🗑️ C</button>
+    
+    <button class="key" onclick="input('1')">1</button>
+    <button class="key" onclick="input('2')">2</button>
+    <button class="key" onclick="input('3')">3</button>
+    <button class="key action" onclick="swap()">🔄</button>
+    
+    <button class="key zero" onclick="input('0')">0</button>
+    <button class="key" onclick="input('.')">.</button>
+    <button class="key" onclick="input('00')">00</button>
+  </div>
+</div>
+
+<!-- Modal de Configuración -->
+<div class="modal" id="settings-modal">
+  <div class="modal-content">
+    <div class="modal-title">⚙️ Configuración</div>
+    
+    <div class="input-group">
+      <label>🇻🇪 Tasa BCV (USD)</label>
+      <input type="number" step="0.01" id="in-bcv">
+    </div>
+    <div class="input-group">
+      <label>🇻🇪 Tasa Paralelo (USD)</label>
+      <input type="number" step="0.01" id="in-paralelo">
+    </div>
+    <div class="input-group">
+      <label>🇪🇺 Tasa Euro (EUR BCV)</label>
+      <input type="number" step="0.01" id="in-eur">
+    </div>
+    <div class="input-group">
+      <label>✍️ Tasa Manual personalizada</label>
+      <input type="number" step="0.01" id="in-manual">
+    </div>
+    
+    <div class="status" id="api-status"></div>
+    
+    <div class="modal-actions">
+      <button class="btn btn-update" onclick="fetchAPI()">☁️ Bajar API</button>
+      <button class="btn btn-save" onclick="saveSettings()">💾 Guardar</button>
+    </div>
+    <button class="btn btn-close" onclick="closeModal()">❌ Cerrar</button>
+  </div>
+</div>
+
+<script>
+  // Registro del Service Worker para PWA
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
+    });
+  }
+
+  // Lógica del Botón de Instalación (PWA)
+  let deferredPrompt;
+  const btnInstall = document.getElementById('btn-install');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    btnInstall.style.display = 'block';
+  });
+
+  btnInstall.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      btnInstall.style.display = 'none';
+    }
+    deferredPrompt = null;
+  });
+
+  // Estado inicial y cálculos
+  let rates = { bcv: 36.50, paralelo: 39.00, eur: 39.50, manual: 38.00 };
+  let activeField = 'usd';
+  let values = { usd: '0', ves: '0' };
+  
+  if (localStorage.getItem('ve_rates')) {
+    rates = JSON.parse(localStorage.getItem('ve_rates'));
+  }
+
+  function formatNumber(num) {
+    if (num === '0' || num === '') return '0';
+    if (num.endsWith('.')) return num; 
+    let parts = num.toString().split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join('.');
+  }
+
+  function updateDisplays() {
+    document.getElementById('val-usd').innerText = formatNumber(values.usd);
+    document.getElementById('val-ves').innerText = formatNumber(values.ves);
+  }
+
+  function calculate() {
+    const rate = rates[document.getElementById('rate-selector').value] || 1;
+    if (activeField === 'usd') {
+      let usdNum = parseFloat(values.usd) || 0;
+      values.ves = (usdNum * rate).toFixed(2).replace(/\.00$/, '');
+    } else {
+      let vesNum = parseFloat(values.ves) || 0;
+      values.usd = (vesNum / rate).toFixed(2).replace(/\.00$/, '');
+    }
+    updateDisplays();
+  }
+
+  function input(char) {
+    let current = values[activeField].replace(/,/g, '');
+    if (current === '0' && char !== '.') current = '';
+    if (current === '' && char === '.') current = '0';
+    if (char === '.' && current.includes('.')) return;
+    
+    let parts = current.split('.');
+    if (parts.length > 1 && parts[1].length >= 2) return;
+    if (current.replace('.', '').length >= 10) return;
+
+    values[activeField] = current + char;
+    calculate();
+  }
+
+  function backspace() {
+    let current = values[activeField].replace(/,/g, '');
+    current = current.slice(0, -1);
+    if (current === '' || current === '-') current = '0';
+    values[activeField] = current;
+    calculate();
+  }
+
+  function clearAll() {
+    values.usd = '0';
+    values.ves = '0';
+    updateDisplays();
+  }
+
+  function setActive(field) {
+    activeField = field;
+    document.getElementById('box-usd').classList.toggle('active', field === 'usd');
+    document.getElementById('box-ves').classList.toggle('active', field === 'ves');
+  }
+
+  function swap() {
+    setActive(activeField === 'usd' ? 'ves' : 'usd');
+  }
+
+  function openModal() {
+    document.getElementById('in-bcv').value = rates.bcv;
+    document.getElementById('in-paralelo').value = rates.paralelo;
+    document.getElementById('in-eur').value = rates.eur;
+    document.getElementById('in-manual').value = rates.manual;
+    document.getElementById('settings-modal').classList.add('show');
+    document.getElementById('api-status').innerText = '';
+  }
+
+  function closeModal() {
+    document.getElementById('settings-modal').classList.remove('show');
+  }
+
+  function saveSettings() {
+    rates.bcv = parseFloat(document.getElementById('in-bcv').value) || rates.bcv;
+    rates.paralelo = parseFloat(document.getElementById('in-paralelo').value) || rates.paralelo;
+    rates.eur = parseFloat(document.getElementById('in-eur').value) || rates.eur;
+    rates.manual = parseFloat(document.getElementById('in-manual').value) || rates.manual;
+    
+    localStorage.setItem('ve_rates', JSON.stringify(rates));
+    calculate();
+    closeModal();
+  }
+
+  async function fetchAPI() {
+    const status = document.getElementById('api-status');
+    status.innerText = "Consultando tasas oficiales...";
+    status.style.color = "#0a84ff";
+    try {
+      let resOficial = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+      let dataOficial = await resOficial.json();
+      if(dataOficial.promedio) document.getElementById('in-bcv').value = dataOficial.promedio;
+      
+      let resParalelo = await fetch('https://ve.dolarapi.com/v1/dolares/paralelo');
+      let dataParalelo = await resParalelo.json();
+      if(dataParalelo.promedio) document.getElementById('in-paralelo').value = dataParalelo.promedio;
+
+      let resEuro = await fetch('https://ve.dolarapi.com/v1/euros/oficial');
+      let dataEuro = await resEuro.json();
+      if(dataEuro.promedio) document.getElementById('in-eur').value = dataEuro.promedio;
+
+      status.innerText = "¡Tasas actualizadas con éxito!";
+      status.style.color = "#34c759";
+    } catch (e) {
+      status.innerText = "Error de conexión. Revisa tu internet.";
+      status.style.color = "#ff453a";
+    }
+  }
+
+  updateDisplays();
+</script>
+</body>
+</html>
