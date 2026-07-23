@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#1c1c1e"/>
+  <path d="M120 70h272a50 50 0 0 1 50 50v100H70V120a50 50 0 0 1 50-50z" fill="#2c2c2e"/>
+  <text x="410" y="170" font-family="-apple-system, sans-serif" font-size="110" font-weight="bold" fill="#ffffff" text-anchor="end">0</text>
+  <rect x="70" y="250" width="160" height="100" rx="35" fill="#3a3a3c"/>
+  <path d="M130 300h40M150 280v40" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+  <rect x="280" y="250" width="160" height="100" rx="35" fill="#3a3a3c"/>
+  <path d="M340 300h40" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+  <rect x="70" y="380" width="160" height="100" rx="35" fill="#3a3a3c"/>
+  <path d="M125 415l50 50M175 415l-50 50" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+  <rect x="280" y="380" width="160" height="100" rx="35" fill="#ff9f0a"/>
+  <path d="M335 415h50M335 445h50" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+</svg>
