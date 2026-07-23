@@ -1,8 +1,9 @@
-const CACHE_NAME = 'convertix-v1';
+const CACHE_NAME = 'convertix-v2';
 const urlsToCache = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './IMG_8051.jpg'
 ];
 
 self.addEventListener('install', event => {
@@ -18,7 +19,6 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Devuelve el recurso en caché si existe, si no, lo busca en la red.
         return response || fetch(event.request);
       })
   );
